@@ -1,0 +1,62 @@
+scrape_task:
+  description: >
+    1. First extract all relevant links from the main website {website}, focusing on:
+       - Contact pages
+       - About pages
+       - Support pages
+       - Help pages
+    2. Then scrape content from:
+       - The homepage (including footer and main content)
+       - All identified contact/support pages
+    3. Extract all text content and links, paying special attention to:
+       - Contact information sections
+       - Footer sections
+       - Email addresses
+       - Mailto links in the HTML
+       - Contact forms
+
+  expected_output: >
+    - List of all relevant links found
+    - Hierarchical structure of contact-related pages
+    - List of all mailto links discovered from all pages
+    - Comprehensive text content from the homepage and all contact-related pages
+    - Any contact information and email addresses discovered
+  agent: website_scraper
+
+analyze_task:
+  description: >
+    Analyze the scraped content to identify email addresses.
+    - Find all email addresses in the content
+    - Identify likely support/contact emails based on patterns (support@, contact@, etc.)
+    - Validate email formats
+    - Note the context where each email was found
+    - Prioritize emails based on their likely purpose
+  expected_output: >
+    Markdown report containing:
+    - List of identified email addresses
+    - Classification of each email (support, general contact, etc.)
+    - Context where each email was found
+    - Confidence level for each classification
+  agent: email_analyzer
+
+compose_deletion_request:
+  description: >
+    Compose a formal data deletion request email using the identified contact information.
+    Consider:
+    - User's full name: {user_name}
+    - User's location: {user_location}
+    - Website's privacy policy and terms
+    - Applicable privacy laws (GDPR, CCPA, etc.)
+    - Professional tone and clear request
+    - Specific timeframe for response
+    - Any relevant account identifiers
+  expected_output: >
+    A professionally composed email containing:
+    - Clear subject line
+    - Formal greeting
+    - Request for data deletion
+    - Reference to relevant privacy laws
+    - User identification details
+    - Expected timeframe for response
+    - Professional closing
+  agent: deletion_request_composer
