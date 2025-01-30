@@ -22,15 +22,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-
 class EmailReaderInput(BaseModel):
     """Input schema for EmailReaderTool."""
-    max_results: int = Field(default=10, description="Maximum number of emails to retrieve")
-    mark_as_read: bool = Field(default=True, description="Whether to mark emails as read")
+    max_results: int = Field(default=20, description="Maximum number of emails to retrieve")
+    mark_as_read: bool = Field(default=False, description="Whether to mark emails as read")
 
 class EmailReaderTool(BaseTool):
     name: str = "Email Reader"
-    description: str = "Reads the last 10 unread emails from Gmail inbox"
+    description: str = "Reads the last 20 messages from Gmail inbox"
     args_schema: Type[BaseModel] = EmailReaderInput
 
     def __init__(self):
@@ -77,32 +76,95 @@ class EmailReaderTool(BaseTool):
             raise
 
     def _get_message_body(self, payload) -> str:
-        """Extract message body from email payload."""
+        """Extract and clean message body from email payload."""
         logger.debug("Extracting message body")
         body = ''
         try:
             if 'parts' in payload:
                 logger.debug("Processing multipart message")
+                # First try to find text/plain part
                 for part in payload['parts']:
                     if part['mimeType'] == 'text/plain':
                         data = part['body'].get('data', '')
                         if data:
-                            body += base64.urlsafe_b64decode(data).decode('utf-8')
-                    elif part['mimeType'] == 'text/html':
+                            body = base64.urlsafe_b64decode(data).decode('utf-8')
+                            return self._clean_text(body)
+                
+                # If no text/plain, try html
+                for part in payload['parts']:
+                    if part['mimeType'] == 'text/html':
                         data = part['body'].get('data', '')
                         if data:
                             html = base64.urlsafe_b64decode(data).decode('utf-8')
-                            soup = BeautifulSoup(html, 'html.parser')
-                            body += soup.get_text()
+                            return self._clean_html(html)
             else:
                 logger.debug("Processing single part message")
                 data = payload['body'].get('data', '')
                 if data:
-                    body += base64.urlsafe_b64decode(data).decode('utf-8')
+                    content = base64.urlsafe_b64decode(data).decode('utf-8')
+                    if payload.get('mimeType') == 'text/html':
+                        return self._clean_html(content)
+                    return self._clean_text(content)
+            
             return body.strip()
         except Exception as e:
             logger.error(f"Error processing message body: {e}", exc_info=True)
             return f"Error processing message body: {str(e)}"
+
+    def _clean_html(self, html_content: str) -> str:
+        """Clean HTML content and extract readable text."""
+        try:
+            # Parse HTML
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # Remove script and style elements
+            for script in soup(["script", "style", "head"]):
+                script.decompose()
+            
+            # Remove all links but keep their text
+            for a in soup.find_all('a'):
+                a.replace_with(a.get_text())
+            
+            # Get text and clean it
+            text = soup.get_text(separator='\n')
+            return self._clean_text(text)
+        except Exception as e:
+            logger.error(f"Error cleaning HTML: {e}")
+            return self._clean_text(html_content)
+
+    def _clean_text(self, text: str) -> str:
+        """Clean and format plain text content."""
+        try:
+            # Split into lines and remove empty ones
+            lines = [line.strip() for line in text.splitlines()]
+            lines = [line for line in lines if line]
+            
+            # Remove common noise
+            cleaned_lines = []
+            for line in lines:
+                # Skip lines that look like URLs, CSS, or other noise
+                if any(skip in line.lower() for skip in [
+                    'http://', 'https://', 
+                    '{', '}', '</', 
+                    'font-family:', 'color:', 
+                    'xmlns:', 'javascript:',
+                    '͏ ͏ ͏'
+                ]):
+                    continue
+                cleaned_lines.append(line)
+            
+            # Join lines and clean up extra whitespace
+            text = '\n'.join(cleaned_lines)
+            text = ' '.join(text.split())
+            
+            # Truncate if too long (e.g., first 1000 characters)
+            if len(text) > 1000:
+                text = text[:997] + "..."
+            
+            return text.strip()
+        except Exception as e:
+            logger.error(f"Error cleaning text: {e}")
+            return text.strip()
 
     def _format_email_info(self, message) -> Dict:
         """Format email information into a dictionary."""
@@ -119,24 +181,24 @@ class EmailReaderTool(BaseTool):
             "body": self._get_message_body(message['payload'])
         }
 
-    def _run(self, max_results: int = 10, mark_as_read: bool = True) -> str:
-        """Read unread emails from Gmail inbox."""
-        logger.debug(f"Reading last {max_results} unread emails")
+    def _run(self, max_results: int = 20, mark_as_read: bool = False) -> str:
+        """Read last messages from Gmail inbox regardless of read status."""
+        logger.debug(f"Reading last {max_results} messages")
         
         if not self._gmail:
             return "Email service not initialized properly"
             
         try:
-            # Search for unread messages in inbox
+            # Search for messages in inbox without UNREAD filter
             response = self._gmail.service.users().messages().list(
                 userId='me',
-                labelIds=['INBOX', 'UNREAD'],
+                labelIds=['INBOX'],  # Removed UNREAD filter
                 maxResults=max_results
             ).execute()
 
             messages = response.get('messages', [])
             if not messages:
-                return "No unread emails found"
+                return "No emails found"
 
             email_data = []
             for msg in messages:
@@ -147,23 +209,15 @@ class EmailReaderTool(BaseTool):
                 
                 email_info = self._format_email_info(message)
                 email_data.append(email_info)
-                
-                if mark_as_read:
-                    self._gmail.service.users().messages().modify(
-                        userId='me',
-                        id=msg['id'],
-                        body={'removeLabelIds': ['UNREAD']}
-                    ).execute()
-                    logger.debug(f"Marked message {msg['id']} as read")
 
             # Format output
-            output = "Last {len(email_data)} unread emails:\n\n"
+            output = f"Last {len(email_data)} messages:\n\n"
             for idx, email in enumerate(email_data, 1):
                 output += f"Email {idx}:\n"
                 output += f"From: {email['sender']}\n"
                 output += f"Subject: {email['subject']}\n"
                 output += f"Date: {email['date']}\n"
-                output += f"Body:\n{email['body'][:500]}...\n\n"  # First 500 chars of body
+                output += f"Body:\n{email['body']}\n\n"  # Removed truncation to show full body
                 output += "-" * 80 + "\n\n"
 
             return output

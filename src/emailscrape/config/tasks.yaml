@@ -81,6 +81,7 @@ email_reader_task:
     {
       "emails": [
         {
+          "id": "string",
           "sender": "string",
           "subject": "string",
           "body": "string",

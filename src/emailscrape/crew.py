@@ -73,7 +73,8 @@ class Emailscrape():
 			config=self.agents_config['email_reader'],
 			tools=[EmailReaderTool],
 			memory=True,
-			verbose=True
+			verbose=True,
+			output_file='email_reader_output.json'
 		)
 
 	# To learn more about structured task outputs, 
@@ -122,17 +123,17 @@ class Emailscrape():
 
 		return Crew(
 			agents=[
-				# self.website_scraper(),
-				# self.email_analyzer(),
-				# self.deletion_request_composer(),
-				# self.email_sender(),
+				self.website_scraper(),
+				self.email_analyzer(),
+				self.deletion_request_composer(),
+				self.email_sender(),
 				self.email_reader()
 			],
 			tasks=[
-				# self.scrape_task(),
-				# self.analyze_task(),
-				# self.compose_deletion_request(),
-				# self.email_sender_task(),
+				self.scrape_task(),
+				self.analyze_task(),
+				self.compose_deletion_request(),
+				self.email_sender_task(),
 				self.email_reader_task()
 			],
 			process=Process.sequential,

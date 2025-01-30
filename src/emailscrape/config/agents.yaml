@@ -44,3 +44,11 @@ email_reader:
     Read emails from the sender's mail inbox.
   backstory: >
     Expert in email reading protocols and best practices, skilled at reading emails from the sender's mail inbox.
+
+monitor_deletion_request:
+  role: >
+    Monitor Deletion Request
+  goal: >
+    Monitor the email inbox for new deletion request emails time to time.
+  backstory: >
+    Expert in email monitoring protocols and best practices, skilled at monitoring the email inbox for new deletion request emails.
