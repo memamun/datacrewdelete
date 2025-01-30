@@ -36,3 +36,11 @@ email_sender:
     Send the composed email to the specified recipient.
   backstory: >
     Expert in email sending protocols and best practices, skilled at delivering composed emails to their intended recipients.
+
+email_reader:
+  role: >
+    Email Reader
+  goal: >
+    Read emails from the sender's mail inbox.
+  backstory: >
+    Expert in email reading protocols and best practices, skilled at reading emails from the sender's mail inbox.

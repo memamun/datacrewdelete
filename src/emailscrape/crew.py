@@ -3,10 +3,13 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import ScrapeElementFromWebsiteTool, ScrapeWebsiteTool
 from emailscrape.tools.link_scraper import LinkScraperTool
 from emailscrape.tools.email_tools import EmailSenderTool
+from emailscrape.tools.email_reader import EmailReaderTool
+
 ScrapeWebsiteTool = ScrapeWebsiteTool()
 ScrapeElementFromWebsiteTool = ScrapeElementFromWebsiteTool()
 LinkScraperTool = LinkScraperTool()
 EmailSenderTool = EmailSenderTool()
+EmailReaderTool = EmailReaderTool()
 
 # If you want to run a snippet of code before or after the crew starts, 
 # you can use the @before_kickoff and @after_kickoff decorators
@@ -64,6 +67,15 @@ class Emailscrape():
 		)
 
 
+	@agent
+	def email_reader(self) -> Agent:
+		return Agent(
+			config=self.agents_config['email_reader'],
+			tools=[EmailReaderTool],
+			memory=True,
+			verbose=True
+		)
+
 	# To learn more about structured task outputs, 
 	# task dependencies, and task callbacks, check out the documentation:
 	# https://docs.crewai.com/concepts/tasks#overview-of-a-task
@@ -95,6 +107,12 @@ class Emailscrape():
 			config=self.tasks_config['email_sender_task']
 		)
 
+	@task
+	def email_reader_task(self) -> Task:
+		return Task(
+			config=self.tasks_config['email_reader_task']
+		)
+
 
 	@crew
 	def crew(self) -> Crew:
@@ -104,16 +122,18 @@ class Emailscrape():
 
 		return Crew(
 			agents=[
-				self.website_scraper(),
-				self.email_analyzer(),
-				self.deletion_request_composer(),
-				self.email_sender()
+				# self.website_scraper(),
+				# self.email_analyzer(),
+				# self.deletion_request_composer(),
+				# self.email_sender(),
+				self.email_reader()
 			],
 			tasks=[
-				self.scrape_task(),
-				self.analyze_task(),
-				self.compose_deletion_request(),
-				self.email_sender_task()
+				# self.scrape_task(),
+				# self.analyze_task(),
+				# self.compose_deletion_request(),
+				# self.email_sender_task(),
+				self.email_reader_task()
 			],
 			process=Process.sequential,
 			verbose=True,

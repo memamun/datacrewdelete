@@ -71,3 +71,23 @@ email_sender_task:
     The email is sent to the specified recipient.
   agent: email_sender
 
+email_reader_task:
+  description: >
+    Read emails from the sender's mail inbox.
+  expected_output: >
+    The emails are read from the sender's mail inbox.
+    in JSON format:
+    use summary of the email body
+    {
+      "emails": [
+        {
+          "sender": "string",
+          "subject": "string",
+          "body": "string",
+          "date": "string"
+        }
+      ]
+    }
+  agent: email_reader
+
+
