@@ -45,10 +45,13 @@ email_reader:
   backstory: >
     Expert in email reading protocols and best practices, skilled at reading emails from the sender's mail inbox.
 
-monitor_deletion_request:
+deletion_manager:
   role: >
-    Monitor Deletion Request
+    Data Deletion Process Manager
   goal: >
-    Monitor the email inbox for new deletion request emails time to time.
+    Monitor and manage the entire data deletion request process, including sending requests,
+    monitoring responses, and coordinating follow-up actions
   backstory: >
-    Expert in email monitoring protocols and best practices, skilled at monitoring the email inbox for new deletion request emails.
+    Senior process manager specialized in data privacy compliance and request management.
+    Expert at coordinating teams, monitoring email communications, and ensuring successful
+    completion of data deletion requests.

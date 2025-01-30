@@ -92,3 +92,20 @@ email_reader_task:
   agent: email_reader
 
 
+monitor_emails_task:
+  description: >
+    Monitor inbox for responses to data deletion requests.
+    Check for confirmation emails from website support teams.
+    Analyze response content to determine if deletion is confirmed.
+  expected_output: >
+    {
+      "status": "complete|pending|failed",
+      "website": "string",
+      "confirmation_received": boolean,
+      "deletion_confirmed": boolean,
+      "response_summary": "string",
+      "next_action": "string"
+    }
+  agent: deletion_manager
+
+

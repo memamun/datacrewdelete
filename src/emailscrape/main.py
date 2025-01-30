@@ -5,6 +5,7 @@ import warnings
 from datetime import datetime
 
 from emailscrape.crew import Emailscrape
+from emailscrape.manager import DeletionManagerCrew
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
@@ -15,7 +16,7 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
 def run():
     """
-    Run the crew.
+    Run the crew with manager monitoring.
     """
     inputs = {
         'website': 'https://mamunwrites.com',
@@ -24,9 +25,20 @@ def run():
     }
 
     try:
-        Emailscrape().crew().kickoff(inputs=inputs)
+        # Initial deletion request
+        crew_result = Emailscrape().crew().kickoff(inputs=inputs)
+        
+        # Start monitoring process
+        manager = DeletionManagerCrew()
+        monitoring_result = manager.monitor_deletion_process(
+            website=inputs['website'],
+            check_interval=1  # Check every 24 hours
+        )
+        
+        return monitoring_result
+        
     except Exception as e:
-        raise Exception(f"An error occurred while running the crew: {e}")
+        raise Exception(f"An error occurred: {e}")
 
 
 def train():
