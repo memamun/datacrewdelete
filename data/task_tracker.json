@@ -1,16 +1,16 @@
 {
   "https://dinajpurcity.com:rakib@example.com": {
     "status": "failed",
-    "completion_date": "2025-01-30T14:13:18.322941",
+    "completion_date": "2025-01-30T15:11:39.009453",
     "details": {
-      "error": "1 validation error for Task\ncontext\n  Input should be a valid list [type=list_type, input_value={'website': 'https://dina...letion request process'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.10/v/list_type"
+      "error": "litellm.RateLimitError: RateLimitError: OpenAIException - Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
     }
   },
   "https://mamunwrites.com:mamun@example.com": {
     "status": "failed",
-    "completion_date": "2025-01-30T14:13:18.380944",
+    "completion_date": "2025-01-30T15:11:41.155450",
     "details": {
-      "error": "1 validation error for Task\ncontext\n  Input should be a valid list [type=list_type, input_value={'website': 'https://mamu...letion request process'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.10/v/list_type"
+      "error": "litellm.RateLimitError: RateLimitError: OpenAIException - Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
     }
   }
 }
