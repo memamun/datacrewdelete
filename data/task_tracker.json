@@ -1,0 +1,16 @@
+{
+  "https://dinajpurcity.com:rakib@example.com": {
+    "status": "failed",
+    "completion_date": "2025-01-30T14:13:18.322941",
+    "details": {
+      "error": "1 validation error for Task\ncontext\n  Input should be a valid list [type=list_type, input_value={'website': 'https://dina...letion request process'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.10/v/list_type"
+    }
+  },
+  "https://mamunwrites.com:mamun@example.com": {
+    "status": "failed",
+    "completion_date": "2025-01-30T14:13:18.380944",
+    "details": {
+      "error": "1 validation error for Task\ncontext\n  Input should be a valid list [type=list_type, input_value={'website': 'https://mamu...letion request process'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.10/v/list_type"
+    }
+  }
+}

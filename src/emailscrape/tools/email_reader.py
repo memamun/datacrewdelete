@@ -22,14 +22,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 load_dotenv()
+
 class EmailReaderInput(BaseModel):
     """Input schema for EmailReaderTool."""
-    max_results: int = Field(default=20, description="Maximum number of emails to retrieve")
-    mark_as_read: bool = Field(default=False, description="Whether to mark emails as read")
+    max_results: int = Field(default=10, description="Maximum number of emails to retrieve")
+    mark_as_read: bool = Field(default=True, description="Whether to mark emails as read")
 
 class EmailReaderTool(BaseTool):
     name: str = "Email Reader"
-    description: str = "Reads the last 20 messages from Gmail inbox"
+    description: str = "Reads the last 10 unread emails from Gmail inbox"
     args_schema: Type[BaseModel] = EmailReaderInput
 
     def __init__(self):
@@ -181,24 +182,24 @@ class EmailReaderTool(BaseTool):
             "body": self._get_message_body(message['payload'])
         }
 
-    def _run(self, max_results: int = 20, mark_as_read: bool = False) -> str:
-        """Read last messages from Gmail inbox regardless of read status."""
-        logger.debug(f"Reading last {max_results} messages")
+    def _run(self, max_results: int = 10, mark_as_read: bool = True) -> str:
+        """Read unread emails from Gmail inbox."""
+        logger.debug(f"Reading last {max_results} unread emails")
         
         if not self._gmail:
             return "Email service not initialized properly"
             
         try:
-            # Search for messages in inbox without UNREAD filter
+            # Search for unread messages in inbox
             response = self._gmail.service.users().messages().list(
                 userId='me',
-                labelIds=['INBOX'],  # Removed UNREAD filter
+                labelIds=['INBOX', 'UNREAD'],
                 maxResults=max_results
             ).execute()
 
             messages = response.get('messages', [])
             if not messages:
-                return "No emails found"
+                return "No unread emails found"
 
             email_data = []
             for msg in messages:
@@ -209,15 +210,23 @@ class EmailReaderTool(BaseTool):
                 
                 email_info = self._format_email_info(message)
                 email_data.append(email_info)
+                
+                if mark_as_read:
+                    self._gmail.service.users().messages().modify(
+                        userId='me',
+                        id=msg['id'],
+                        body={'removeLabelIds': ['UNREAD']}
+                    ).execute()
+                    logger.debug(f"Marked message {msg['id']} as read")
 
             # Format output
-            output = f"Last {len(email_data)} messages:\n\n"
+            output = "Last {len(email_data)} unread emails:\n\n"
             for idx, email in enumerate(email_data, 1):
                 output += f"Email {idx}:\n"
                 output += f"From: {email['sender']}\n"
                 output += f"Subject: {email['subject']}\n"
                 output += f"Date: {email['date']}\n"
-                output += f"Body:\n{email['body']}\n\n"  # Removed truncation to show full body
+                output += f"Body:\n{email['body'][:500]}...\n\n"  # First 500 chars of body
                 output += "-" * 80 + "\n\n"
 
             return output

@@ -14,13 +14,13 @@ class DeletionManagerCrew:
         self.agents_config = 'config/agents.yaml'
         self.tasks_config = 'config/tasks.yaml'
         
-    def monitor_deletion_process(self, website: str, check_interval: int = 24) -> dict:
+    def monitor_deletion_process(self, website: str, check_interval: int = 1) -> dict:
         """Monitor email responses for deletion confirmation."""
         try:
             # Initialize email reader tool
             email_reader = EmailReaderTool()
             start_time = datetime.now()
-            max_duration = timedelta(days=30)
+            max_duration = timedelta(days=2)
 
             while datetime.now() - start_time < max_duration:
                 # Check emails
@@ -36,7 +36,7 @@ class DeletionManagerCrew:
                     }
                 
                 # Wait for next check
-                time.sleep(check_interval * 3600)
+                time.sleep(check_interval * 100)
             
             return {"status": "timeout", "website": website}
             
