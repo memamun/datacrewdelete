@@ -5,7 +5,11 @@ description = "emailscrape using crewAI"
 authors = [{ name = "Your Name", email = "you@example.com" }]
 requires-python = ">=3.10,<3.13"
 dependencies = [
-    "crewai[tools]>=0.98.0,<1.0.0"
+    "crewai[tools]>=0.98.0,<1.0.0",
+    "playwright>=1.41.0",
+    "beautifulsoup4>=4.12.0",
+    "undetected-playwright>=0.1.0",
+    "cloudscraper>=1.2.71"
 ]
 
 [project.scripts]

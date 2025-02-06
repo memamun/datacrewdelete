@@ -55,3 +55,8 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Playwright
+.playwright/
+playwright-report/
+test-results/
