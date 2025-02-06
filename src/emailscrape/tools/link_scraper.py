@@ -6,10 +6,11 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import re
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
-import time
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
 import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
-from emailscrape.utils.domain_db import DomainDatabase
+import time
 
 class LinkScraperInput(BaseModel):
     """Input schema for LinkScraperTool."""
@@ -22,10 +23,6 @@ class LinkScraperTool(BaseTool):
     )
     args_schema: Type[BaseModel] = LinkScraperInput
     visited_urls: Set[str] = Field(default_factory=set)
-
-    def __init__(self):
-        super().__init__()
-        self.domain_db = DomainDatabase()
 
     def _get_base_domain(self, url: str) -> str:
         parsed = urlparse(url)
@@ -168,21 +165,7 @@ class LinkScraperTool(BaseTool):
         return "\n".join(output)
 
     def _run(self, url: str) -> str:
-        # Extract domain from URL
-        domain = self._get_base_domain(url)
-        
-        # Check cache first
-        cached_data = self.domain_db.get_domain_data(domain)
-        if cached_data:
-            logger.info(f"Using cached data for domain: {domain}")
-            return self._format_results(cached_data)
-        
-        # If not cached, proceed with scraping
         self.visited_urls.clear()
         base_domain = self._get_base_domain(url)
         results = self._scrape_page(url, base_domain)
-        
-        # Cache the results
-        self.domain_db.save_domain_data(domain, results)
-        
         return self._format_results(results) 
